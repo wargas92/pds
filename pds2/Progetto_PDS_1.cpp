@@ -8,7 +8,6 @@
 #include <cstdio>
 
 MyProcessManager& p = MyProcessManager::CreateInstance();
-int ninogay;
 int c=0;
 BOOL CALLBACK EnumWindowsPrc(HWND hwnd, LPARAM lParam)
 {
