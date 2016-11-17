@@ -12,6 +12,7 @@ int MyProcessManager::pcount;
 void PrintProcessNameAndID(DWORD);
 void PrintProcessInfo(DWORD);
 void PrintProcessInfo(MyProcess&);
+HRESULT SaveIcon(HICON hIcon, const wchar_t* path);
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
 
 MyProcessManager::MyProcessManager() { this->pFocus = new MyProcess(); }
@@ -98,10 +99,18 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 
 			if (hProcess != NULL) {
-				GetProcessImageFileNameA(hProcess, buffer, 1024);
-				CloseHandle(hProcess);
+				HICON h;
+				GetProcessImageFileNameA(hProcess, buffer, sizeof(buffer));
 				std::string s(PathFindFileNameA(buffer));
 				c->setPNAME(s);
+				GetModuleFileNameExA(hProcess, 0, buffer, sizeof(buffer));
+				c->setIcon(buffer);
+				h = c->getIcon();
+				std::wstring st(s.begin(), s.end());
+				st = L"c:\\test\\" + st + L".ico";
+				const wchar_t * path = st.c_str();
+				SaveIcon(h, st.c_str());
+				CloseHandle(hProcess);
 			}
 
 
@@ -244,4 +253,40 @@ void MyProcessManager::AddElement()
 			
 	}
 
+}
+
+
+HRESULT SaveIcon(HICON hIcon, const wchar_t* path) {
+	// Create the IPicture intrface
+	PICTDESC desc = { sizeof(PICTDESC) };
+	desc.picType = PICTYPE_ICON;
+	desc.icon.hicon = hIcon;
+	IPicture* pPicture = 0;
+	HRESULT hr = OleCreatePictureIndirect(&desc, IID_IPicture, FALSE, (void**)&pPicture);
+	if (FAILED(hr)) return hr;
+
+	// Create a stream and save the image
+	IStream* pStream = 0;
+	CreateStreamOnHGlobal(0, TRUE, &pStream);
+	LONG cbSize = 0;
+	hr = pPicture->SaveAsFile(pStream, TRUE, &cbSize);
+
+	// Write the stream content to the file
+	if (!FAILED(hr)) {
+		HGLOBAL hBuf = 0;
+		GetHGlobalFromStream(pStream, &hBuf);
+		void* buffer = GlobalLock(hBuf);
+		HANDLE hFile = CreateFileW(path, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
+		if (!hFile) hr = HRESULT_FROM_WIN32(GetLastError());
+		else {
+			DWORD written = 0;
+			WriteFile(hFile, buffer, cbSize, &written, 0);
+			CloseHandle(hFile);
+		}
+		GlobalUnlock(buffer);
+	}
+	// Cleanup
+	pStream->Release();
+	pPicture->Release();
+	return hr;
 }
