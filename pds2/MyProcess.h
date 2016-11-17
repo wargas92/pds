@@ -5,6 +5,7 @@
 #include <string>
 #include <Psapi.h>
 #include <WinDef.h>
+#include <shellapi.h>
 
 #define MAXL 1023
 
@@ -14,6 +15,7 @@ class MyProcess
 	HWND mWND;
 	std::string className, titleWND, pName;
 	bool isVisible;
+	HICON icon;
 
 public:
 	MyProcess(DWORD pid);
@@ -36,6 +38,9 @@ public:
 	bool getIsVisible();
 	void setIsVisible(bool);
 	std::string toString();
+	DWORD setIcon(char *);
+	HICON getIcon();
+	
 
 
 
