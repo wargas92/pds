@@ -1,6 +1,8 @@
 #pragma once
 #include <WinSock2.h>
 #include <iostream>
+#include <windows.h>
+
 class My_Socket
 {
 	SOCKET s, acc_s;
