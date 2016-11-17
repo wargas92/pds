@@ -7,6 +7,11 @@
 #include <map>
 #include <WinDef.h>
 #include <mutex>
+#include <olectl.h>
+#include <string.h>
+
+#pragma comment(lib, "oleaut32.lib")
+
 class MyProcessManager
 {
 	static std::map < DWORD, MyProcess* > MyProcessManager::pMap;
