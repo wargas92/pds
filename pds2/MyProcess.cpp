@@ -136,7 +136,7 @@ DWORD MyProcess::setIcon(char * cn)
 	SHFILEINFOA sfi = { 0 };
 	bool res;
 
-	if(res = SHGetFileInfo(cn, NULL, &sfi, sizeof(sfi), SHGFI_ICON))
+	if(res = SHGetFileInfoA(cn, NULL, &sfi, sizeof(sfi), SHGFI_ICON))
 		this->icon = sfi.hIcon;
 	return res;
 }
