@@ -63,29 +63,52 @@ int main()
  std::thread t ([&]() { 
 	MSG msg;
 
-HWINEVENTHOOK hWinEventHook0 = SetWinEventHook(
-		 EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY,
-			 NULL, HandleWinEvent, 0, 0,
-		 WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-
 		HWINEVENTHOOK hWinEventHook1 = SetWinEventHook(
 		 EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE,
 		 NULL, HandleWinEvent, 0, 0,
 		WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-		
-	 HWINEVENTHOOK h = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0, WinEventProcFC, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+	
 	
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	UnhookWinEvent(h);
+	
 	UnhookWinEvent(hWinEventHook1);
-	UnhookWinEvent(hWinEventHook0);
+	
 
 			}
 		);
+ std::thread t1([&]() {
+	 MSG msg;
 
+	 HWINEVENTHOOK h = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0, WinEventProcFC, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+
+	 while (GetMessage(&msg, NULL, 0, 0)) {
+		 TranslateMessage(&msg);
+		 DispatchMessage(&msg);
+	 }
+	 UnhookWinEvent(h);
+
+
+ }
+ );
+ std::thread t3([&]() {
+	 MSG msg;
+
+	 HWINEVENTHOOK hWinEventHook0 = SetWinEventHook(
+		 EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY,
+		 NULL, HandleWinEvent, 0, 0,
+		 WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+	 while (GetMessage(&msg, NULL, 0, 0)) {
+		 TranslateMessage(&msg);
+		 DispatchMessage(&msg);
+	 }
+	
+	 UnhookWinEvent(hWinEventHook0);
+
+ }
+ );
 	std::string st = p.PrintAll();
 	std::cout << st<<std::endl<<st.length();
 	My_Socket s;

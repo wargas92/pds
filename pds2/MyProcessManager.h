@@ -8,6 +8,7 @@
 #include <WinDef.h>
 #include <mutex>
 #include <olectl.h>
+#include <condition_variable>
 #include <string.h>
 
 #pragma comment(lib, "oleaut32.lib")
@@ -17,6 +18,7 @@ class MyProcessManager
 	static std::map < DWORD, MyProcess* > MyProcessManager::pMap;
 	MyProcess* pFocus;
 	std::mutex m;
+	std::condition_variable cv;
 	//BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
 	MyProcessManager(const MyProcessManager&);
 	//\MyProcessManager& operator= (const MyProcessManager&);

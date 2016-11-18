@@ -62,11 +62,11 @@ bool MyProcessManager::InitClass()
 
 
 	// Print the name and process identifier for each process.
-	std::unique_lock<std::mutex> ul(this->m);
+	//std::unique_lock<std::mutex> ul(this->m);
+	//cv.wait(ul);
 	EnumWindows(EnumWindowsProc, NULL);
-
-
 	PrintAll();
+	//cv.notify_all();
 	return true;
 
 
@@ -179,6 +179,7 @@ void MyProcessManager::RemoveElement(DWORD c)
 void MyProcessManager::RemoveElement()
 {
 	std::unique_lock<std::mutex> ul(this->m);
+	cv.wait(ul);
 	std::ostringstream oss;
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
 		oss << i->second->getPid() << " ";
@@ -204,6 +205,8 @@ void MyProcessManager::RemoveElement()
 		if(flag)
 			RemoveElement(std::stoi(word));
 	}
+	cv.notify_all();
+
 }
 
 
@@ -219,13 +222,15 @@ void MyProcessManager::AddElement(MyProcess * c)
 int MyProcessManager::WindowsElementCount()
 {
 	std::unique_lock<std::mutex> ul(this->m);
+	cv.wait(ul);
 	return this->pcount;
+	cv.notify_all();
 }
 
 void MyProcessManager::AddElement()
 {
 	std::unique_lock<std::mutex> ul(this->m);
-
+	cv.wait(ul);
 	std::ostringstream oss;
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
 		oss<<i->second->getPid() << " ";
@@ -252,7 +257,7 @@ void MyProcessManager::AddElement()
 			//RemoveElement(std::stoi(word));
 			
 	}
-
+	cv.notify_all();
 }
 
 
