@@ -9,33 +9,7 @@
 
 MyProcessManager& p = MyProcessManager::CreateInstance();
 int c=0;
-BOOL CALLBACK EnumWindowsPrc(HWND hwnd, LPARAM lParam)
-{
-	char szProcessName[MAX_PATH] = "";
-	// Get a handle to the process.
-	HMODULE hMod;
-	DWORD cbNeeded;
-	GetWindowThreadProcessId(hwnd, &cbNeeded);
-	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, cbNeeded);
-	// Get the process name.
-	if (hProcess != NULL)
-	{
-		if (EnumProcessModules(hProcess, &hMod, sizeof(hMod),
-			&cbNeeded))
-		{
-			GetModuleBaseNameA(hProcess, hMod, szProcessName,
-				sizeof(szProcessName) / sizeof(TCHAR));
-		}
-	}
-	std::string s(szProcessName);
-	CloseHandle(hProcess);
-	// Print the process name and identifier.
-	if (s.length() == 0) return true;
-	GetClassNameA(hwnd, szProcessName, 1024);
-	if (IsWindowEnabled(hwnd) && IsWindowVisible(hwnd) && strlen(szProcessName)!=0)
-		c++;
-	return true;
-}
+
 void CALLBACK WinEventProcFC(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime) {
 	DWORD c;
 	GetWindowThreadProcessId(hwnd, &c);
@@ -57,7 +31,7 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 				VARIANT varResult = {};
 				pAcc->get_accRole(varChild, &varResult);
 
-				if (varResult.lVal == ROLE_SYSTEM_PAGETAB || varResult.lVal == NULL)
+				if (varResult.lVal == ROLE_SYSTEM_APPLICATION || varResult.lVal == NULL)
 				{
 					BSTR bstrName;
 					pAcc->get_accName(varChild, &bstrName);
@@ -84,20 +58,8 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 int main()
 {
 
-
-	
 	p.InitClass();
 	std::string str;
-
-	//p.UpdateFocus();
-	//Sleep(5000);
-	//p.UpdateListProcess();
-	//p.UpdateFocus();
-	//std::cout << "fine" << std::endl;
-	//Sleep(5000);
-	//HOOKPROC* proc = proc1;
-
- 
  std::thread t ([&]() { 
 	MSG msg;
 
@@ -117,18 +79,18 @@ HWINEVENTHOOK hWinEventHook0 = SetWinEventHook(
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
+	UnhookWinEvent(h);
+	UnhookWinEvent(hWinEventHook1);
+	UnhookWinEvent(hWinEventHook0);
 
 			}
 		);
-	//SetWindowsHook(WH_CBT,);
-// UnhookWinEvent(h);
+
 	std::string st = p.PrintAll();
 	std::cout << st<<std::endl<<st.length();
 	My_Socket s;
 	s.NewConnection_Server(1552);
 	s.Sendind_Server((void*)st.c_str(),st.length());
-	//UnhookWinEvent(h);
 	Sleep(20000);
 
     return 0;

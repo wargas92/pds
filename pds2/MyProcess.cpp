@@ -134,9 +134,9 @@ HWND MyProcess::getMWND()
 DWORD MyProcess::setIcon(char * cn)
 {
 	SHFILEINFOA sfi = { 0 };
-	bool res;
+	DWORD res;
 
-	if(res = SHGetFileInfoA(cn, NULL, &sfi, sizeof(sfi), SHGFI_ICON))
+	if((res = SHGetFileInfoA(cn, NULL, &sfi, sizeof(sfi), SHGFI_ICON)))
 		this->icon = sfi.hIcon;
 	return res;
 }
