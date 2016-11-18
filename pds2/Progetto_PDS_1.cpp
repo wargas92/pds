@@ -14,7 +14,7 @@ void CALLBACK WinEventProcFC(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 	DWORD c;
 	GetWindowThreadProcessId(hwnd, &c);
 	std::cout << c << std::endl;
-	p.UpdateFocus(c);
+	p.UpdateFocus();
 }
 
 void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
@@ -41,16 +41,14 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 
 					if (event == EVENT_OBJECT_CREATE)
 					{
-						printf("Create: ");
+						//printf("Create: ");
 						p.AddElement();
 					}
 					else if (event == EVENT_OBJECT_DESTROY)
 					{
-						printf("Destroy:   ");
+						//printf("Destroy:   ");
 						p.RemoveElement();
 					}
-					printf("%S\n", bstrName);
-					SysFreeString(bstrName);
 				}
 				pAcc->Release();
 			}

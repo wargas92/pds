@@ -9,6 +9,7 @@
 #include <mutex>
 #include <olectl.h>
 #include <string.h>
+#include "My_Socket.h"
 
 #pragma comment(lib, "oleaut32.lib")
 
@@ -21,8 +22,8 @@ class MyProcessManager
 	MyProcessManager(const MyProcessManager&);
 	//\MyProcessManager& operator= (const MyProcessManager&);
 	MyProcessManager();
-
-
+	void RemoveElement(DWORD);
+	
 public:
 	static int MyProcessManager::pcount;
 	static MyProcessManager& CreateInstance();
@@ -30,14 +31,11 @@ public:
 	bool InitClass();
 	~MyProcessManager();
 	static bool getProcessByPid(DWORD, MyProcess*);
-	//void UpdateListProcess();
-
 	void UpdateFocus(DWORD pid);
-	//void PrintAll();
+	void UpdateFocus();
+	bool SetFocus(DWORD);
 	std::string PrintAll();
-	void RemoveElement(DWORD);
 	void RemoveElement();
-
 	static void AddElement(MyProcess*);
 	int WindowsElementCount();
 	void MyProcessManager::AddElement();

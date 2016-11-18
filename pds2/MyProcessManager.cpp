@@ -41,6 +41,24 @@ void MyProcessManager::UpdateFocus(DWORD pid)
 
 }
 
+void MyProcessManager::UpdateFocus()
+{
+	HWND h=GetForegroundWindow();
+	DWORD pid;
+	GetWindowThreadProcessId(h, &pid);
+	if (this->pMap[pid] == NULL) this->AddElement();
+	this->UpdateFocus(pid);
+
+}
+
+bool MyProcessManager::SetFocus(DWORD p)
+{
+	if (pMap[p] == NULL) this->AddElement();
+	if (pMap[p]->getMWND() == NULL) return false;
+	SetForegroundWindow(pMap[p]->getMWND());
+	return true;
+}
+
 
 MyProcessManager& MyProcessManager::CreateInstance()
 {
@@ -56,16 +74,9 @@ MyProcess & MyProcessManager::getProcessByPid(DWORD pid)
 bool MyProcessManager::InitClass()
 {
 	this->pcount = 0;
-
-	
-
-
-
 	// Print the name and process identifier for each process.
 	std::unique_lock<std::mutex> ul(this->m);
 	EnumWindows(EnumWindowsProc, NULL);
-
-
 	PrintAll();
 	return true;
 
@@ -97,7 +108,6 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 			HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, lpdwProcessId);
 			// Get the process name.
 
-
 			if (hProcess != NULL) {
 				HICON h;
 				GetProcessImageFileNameA(hProcess, buffer, sizeof(buffer));
@@ -117,7 +127,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 			GetWindowTextA(hwnd, buffer, sizeof(buffer));
 			if (strlen(buffer))
-			c->setTitleWND(buffer);
+				c->setTitleWND(buffer);
 			MyProcessManager::AddElement(c);
 		}
 	
@@ -180,8 +190,13 @@ void MyProcessManager::RemoveElement()
 {
 	std::unique_lock<std::mutex> ul(this->m);
 	std::ostringstream oss;
+	char wc[1024];
+	
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
+	{
 		oss << i->second->getPid() << " ";
+		delete i->second;
+	}
 	std::string str(oss.str());
 	this->pMap.clear();
 	EnumWindows(EnumWindowsProc, NULL);
@@ -195,14 +210,17 @@ void MyProcessManager::RemoveElement()
 	std::istringstream iss(str);
 
 	std::string word,word1;
+	
 	while (iss >> word) {
 		std::istringstream	iss1(str1);
 		bool flag = true;
 		while (iss1 >> word1)
 			if (word1.compare(word) == 0) { flag = false; break; }
 
-		if(flag)
-			RemoveElement(std::stoi(word));
+		if (flag) {
+		//	RemoveElement(std::stoi(word));
+			std::cout << "Element removed with pid: " << word << std::endl;
+		}
 	}
 }
 
@@ -212,7 +230,12 @@ void MyProcessManager::AddElement(MyProcess * c)
 	if (c != NULL)
 	{
 		if (pMap[c->getPid()] == NULL) pMap[c->getPid()] = c;
-		else delete c;
+		else { 
+			
+			pMap[c->getPid()]->setTitleWND(c->getTitleWND());
+			pMap[c->getPid()]->setClassName(c->getClassName()) ;
+			
+			delete c; }
 	}
 }
 
@@ -230,7 +253,7 @@ void MyProcessManager::AddElement()
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
 		oss<<i->second->getPid() << " ";
 	std::string str (oss.str());
-	this->pMap.clear();
+	//this->pMap.clear();
 	EnumWindows(EnumWindowsProc, NULL);
 	std::ostringstream oss1;
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
