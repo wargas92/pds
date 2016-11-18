@@ -21,16 +21,18 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 	{
 
 		
-			IAccessible* pAcc = NULL;
+			IAccessible* pAcc = NULL,*pAcc1=NULL;
 			VARIANT varChild;
-
+			IDispatch* pacc1;
 			HRESULT hr = AccessibleObjectFromEvent(hwnd, idObject, idChild, &pAcc, &varChild);
 
 			if ((hr == S_OK) && (pAcc != NULL))
 			{
 				VARIANT varResult = {};
 				pAcc->get_accRole(varChild, &varResult);
-
+				hr=pAcc->get_accChild(varChild,&pacc1);
+				pAcc1 = (hr == S_OK &&pacc1 != NULL) ? (IAccessible*)pacc1 : pAcc;
+				//LONG c = (hr == S_OK &&pacc1 != NULL) ? ROLE_SYSTEM_WINDOW : ROLE_SYSTEM_APPLICATION;
 				if (varResult.lVal == ROLE_SYSTEM_APPLICATION || varResult.lVal == NULL)
 				{
 					BSTR bstrName;
