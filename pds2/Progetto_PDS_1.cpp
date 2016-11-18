@@ -29,14 +29,15 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 			if ((hr == S_OK) && (pAcc != NULL))
 			{
 				VARIANT varResult = {};
-				pAcc->get_accRole(varChild, &varResult);
+				
 				hr=pAcc->get_accChild(varChild,&pacc1);
-				pAcc1 = (hr == S_OK &&pacc1 != NULL) ? (IAccessible*)pacc1 : pAcc;
+				pAcc1 = (hr == S_OK && pacc1 != NULL) ? (IAccessible*)pacc1 : pAcc;
+				pAcc1->get_accRole(varChild, &varResult);
 				//LONG c = (hr == S_OK &&pacc1 != NULL) ? ROLE_SYSTEM_WINDOW : ROLE_SYSTEM_APPLICATION;
 				if (varResult.lVal == ROLE_SYSTEM_APPLICATION || varResult.lVal == NULL)
 				{
 					BSTR bstrName;
-					pAcc->get_accName(varChild, &bstrName);
+					pAcc1->get_accName(varChild, &bstrName);
 
 					if (event == EVENT_OBJECT_CREATE)
 					{
