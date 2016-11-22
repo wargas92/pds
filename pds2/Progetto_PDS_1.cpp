@@ -14,7 +14,7 @@ void CALLBACK WinEventProcFC(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 	DWORD c;
 	GetWindowThreadProcessId(hwnd, &c);
 	std::cout << c << std::endl;
-	p.UpdateFocus();
+	p.UpdateFocus(c);
 }
 
 void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
@@ -41,12 +41,10 @@ void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG id
 
 					if (event == EVENT_OBJECT_CREATE)
 					{
-						//printf("Create: ");
 						p.AddElement();
 					}
 					else if (event == EVENT_OBJECT_DESTROY)
 					{
-						//printf("Destroy:   ");
 						p.RemoveElement();
 					}
 				}
@@ -88,11 +86,11 @@ HWINEVENTHOOK hWinEventHook0 = SetWinEventHook(
 		);
 
 	std::string st = p.PrintAll();
-	std::cout << st<<std::endl<<st.length();
+	std::cout << st <<std::endl<<st.length()<<std::endl;
 	My_Socket s;
 	s.NewConnection_Server(1552);
-	s.Sendind_Server((void*)st.c_str(),st.length());
-	Sleep(20000);
+	//s.Sendind_Server((void*)st.c_str(),st.length());
+	//Sleep(20000);
 
     return 0;
 }

@@ -18,11 +18,12 @@ class MyProcessManager
 	static std::map < DWORD, MyProcess* > MyProcessManager::pMap;
 	MyProcess* pFocus;
 	std::mutex m;
-	//BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
+	
 	MyProcessManager(const MyProcessManager&);
-	//\MyProcessManager& operator= (const MyProcessManager&);
+	//MyProcessManager& operator= (const MyProcessManager&);
 	MyProcessManager();
 	void RemoveElement(DWORD);
+	My_Socket sock;
 	
 public:
 	static int MyProcessManager::pcount;
@@ -32,7 +33,6 @@ public:
 	~MyProcessManager();
 	static bool getProcessByPid(DWORD, MyProcess*);
 	void UpdateFocus(DWORD pid);
-	void UpdateFocus();
 	bool SetFocus(DWORD);
 	std::string PrintAll();
 	void RemoveElement();

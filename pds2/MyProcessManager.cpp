@@ -5,7 +5,8 @@
 #include "Shlwapi.h"
 #include <vector>
 #include <sstream>
-
+#define SERVER_PORT 1500
+#define MAX_LENGTH 1024
 
 std::map  < DWORD, MyProcess* > MyProcessManager::pMap;
 int MyProcessManager::pcount;
@@ -41,19 +42,11 @@ void MyProcessManager::UpdateFocus(DWORD pid)
 
 }
 
-void MyProcessManager::UpdateFocus()
-{
-	HWND h=GetForegroundWindow();
-	DWORD pid;
-	GetWindowThreadProcessId(h, &pid);
-	if (this->pMap[pid] == NULL) this->AddElement();
-	this->UpdateFocus(pid);
 
-}
 
 bool MyProcessManager::SetFocus(DWORD p)
 {
-	if (pMap[p] == NULL) this->AddElement();
+	if (pMap[p] == NULL) return false;//this->AddElement();
 	if (pMap[p]->getMWND() == NULL) return false;
 	SetForegroundWindow(pMap[p]->getMWND());
 	return true;
@@ -76,15 +69,38 @@ bool MyProcessManager::InitClass()
 	this->pcount = 0;
 	// Print the name and process identifier for each process.
 	std::unique_lock<std::mutex> ul(this->m);
+	
+	this->sock.NewConnection_Server(SERVER_PORT);
+	
 	EnumWindows(EnumWindowsProc, NULL);
-	PrintAll();
+
+	/*std::thread t([&]() {
+		
+		this->s.NewConnection_Server(SERVER_PORT);
+		std::thread t([&]() {
+			char buffer[MAX_LENGTH + 1];
+			int rec;
+			while (1) {
+				rec=this->s.Receiving_Server((void*)buffer, MAX_LENGTH);
+				//Add code here to manage buffer received 
+				//Easily client send first pid then number of commands then commands
+				//			
+			}
+		});
+		t.detach();
+		std::string str = this->PrintAll().c_str();
+		this->s.Sendind_Server((void*)str.c_str(),str.length());//Initial list
+		//Add code here to manage destroy, focus, create;
+		//Use cond_var, which is inside MyProcessManager. It is strongly recommended
+	
+	});*/
+	//t.detach(); // see if a threadJoin is request
+	std::string s(PrintAll());
+	this->sock.Sendind_Server((void*)s.c_str(), s.length());
 	return true;
 
 
 }
-
-
-
 
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
@@ -134,10 +150,6 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 	return TRUE;
 }
-
-
-
-
 
 void PrintProcessInfo(DWORD pid) {
 	
@@ -190,7 +202,6 @@ void MyProcessManager::RemoveElement()
 {
 	std::unique_lock<std::mutex> ul(this->m);
 	std::ostringstream oss;
-	char wc[1024];
 	
 	for (auto i = pMap.begin(); i != pMap.end(); i++)
 	{
@@ -218,7 +229,6 @@ void MyProcessManager::RemoveElement()
 			if (word1.compare(word) == 0) { flag = false; break; }
 
 		if (flag) {
-		//	RemoveElement(std::stoi(word));
 			std::cout << "Element removed with pid: " << word << std::endl;
 		}
 	}
@@ -270,9 +280,12 @@ void MyProcessManager::AddElement()
 		bool flag = true;
 		while (iss >> word)
 			if (word1.compare(word) == 0) { flag = false; break; }
-		if (flag)
+		if (flag) {
 			PrintProcessInfo(*pMap[std::stoi(word1)]);
-			//RemoveElement(std::stoi(word));
+			std::string str (pMap[std::stoi(word1)]->toString());
+			this->sock.Sendind_Server((void*)str.c_str(), str.length());
+			std::cout << str << std::endl;
+		}
 			
 	}
 
