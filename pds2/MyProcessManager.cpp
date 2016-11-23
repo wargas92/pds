@@ -27,6 +27,7 @@ bool MyProcessManager::getProcessByPid(DWORD pid, MyProcess * p)
 }
 void MyProcessManager::UpdateFocus(DWORD pid)
 {
+	std::string s = "?F\n";
 	if (pMap.find(pid) == pMap.end()) return;
 	MyProcess& p = MyProcessManager::getProcessByPid(pid);
 	this->pFocus->setPid(pid);
@@ -39,6 +40,8 @@ void MyProcessManager::UpdateFocus(DWORD pid)
 	std::cout << "================== FOCUS PROCESS INFO ==================" << std::endl;
 	PrintProcessInfo(*pFocus);
 	std::cout << "================== END FOCUS PROCESS INFO ==================" << std::endl;
+	s += pFocus->toString();
+	this->sock.Sendind_Server((void*)s.c_str(), s.length()*sizeof(char));
 
 }
 
@@ -181,7 +184,7 @@ void PrintProcessInfo(MyProcess& p) {
 
 
 std::string MyProcessManager::PrintAll() {
-	std::string s;
+	std::string s="?I\n";
 
 	for (auto i = pMap.begin(); i != pMap.end(); i++) {
 		PrintProcessInfo(*(*i).second);
@@ -230,6 +233,8 @@ void MyProcessManager::RemoveElement()
 
 		if (flag) {
 			std::cout << "Element removed with pid: " << word << std::endl;
+			std::string s = "?R\n" + word + "\n";
+			this->sock.Sendind_Server((void*)s.c_str(), s.length());
 		}
 	}
 }
@@ -282,7 +287,7 @@ void MyProcessManager::AddElement()
 			if (word1.compare(word) == 0) { flag = false; break; }
 		if (flag) {
 			PrintProcessInfo(*pMap[std::stoi(word1)]);
-			std::string str (pMap[std::stoi(word1)]->toString());
+			std::string str="?A\n"+pMap[std::stoi(word1)]->toString();
 			this->sock.Sendind_Server((void*)str.c_str(), str.length());
 			std::cout << str << std::endl;
 		}
